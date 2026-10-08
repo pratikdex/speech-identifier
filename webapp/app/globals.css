@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #444CE7;
+  --color-grey-900: #101828;
+  --color-red-900: #B53131;
+}
+
+.tiptap-editor:focus {
+  outline: none;
+}
+
+.tiptap-editor:focus-visible {
+  outline: none;
+}
+
+.tiptap-editor {
+  caret-color: auto;
+}
+
