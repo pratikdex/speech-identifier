@@ -126,7 +126,7 @@ type TextToSpeech interface {
 
 | Adapter | Capability | Notes |
 |---|---|---|
-| `google` STT | `SpeechToText` | v1p1beta1 streaming. Primary language plus up to 3 `alternative_language_codes` (`MaxCandidates=4`). Interim results now forwarded (`Interim=true`). No translate task. |
+| `google` STT | `SpeechToText` | `apiv1` streaming (already has `AlternativeLanguageCodes`). Primary language plus up to 3 `alternative_language_codes` (`MaxCandidates=4`). Interim results now forwarded (`Interim=true`). No translate task. |
 | `google` Translate | `Translator` | Translation v2 Basic. |
 | `google` TTS | `TextToSpeech` | WaveNet voices for `en-IN`, `hi-IN`, `ml-IN`, `kn-IN`, `te-IN`. **No Odia.** |
 | `sarvam` STT | `SpeechToText` | Saaras v4 over WebSocket (`/speech-to-text/ws`). `language_code=unknown` auto-detects all 22 Indic languages plus English. Mode is `codemix` for Transcribe and `translate` for TranslateToEnglish. Final results only (`Interim=false`). |
@@ -165,7 +165,7 @@ type Session interface {
 
 type Speech interface {
     Start(ctx context.Context, opts SessionOptions) (Session, error)
-    Speak(ctx context.Context, text, lang string) ([]providers.Audio, error) // chunked
+    Speak(ctx context.Context, text, lang string) ([]SpokenChunk, error) // chunked; SpokenChunk{Text string; Audio providers.Audio}
     Usage() usage.Report
 }
 ```
@@ -225,7 +225,7 @@ A file cache in `server/.cache/` (gitignored). The key is `sha256(provider, op, 
 
 **Server → client** (JSON text frames, all with `type`)
 - `utterance`: `{id, text, lang, final, translation?}`. Interim and final utterances share an `id`; a final one replaces the interim text.
-- `audio`: `{seq, last, mime, data}`. `data` is base64. Sent only after `STOP` when `output=speech`.
+- `audio`: `{seq, last, mime, data, text}`. `data` is base64; `text` is the chunk's text, which drives the Speaking caption. Sent only after `STOP` when `output=speech`.
 - `error`: `{code}`, where code is `quota_exhausted | provider_unavailable | unsupported_language | connection_lost | bad_config | session_limit`.
 - `done`: the session finished normally.
 
