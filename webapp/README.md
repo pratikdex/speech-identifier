@@ -1,12 +1,25 @@
 # Dictation demo
 
-## Getting Started
+A single-screen dictation app: tap the seal, speak, and the transcript types
+onto a ruled "pleading paper" page. It talks to the Go server in `../server`
+over a WebSocket.
 
-Create a .env.local file and add the following variables:
+## Configuration
 
-- NEXT_PUBLIC_DICTATION_ENDPOINT - The URL for the dictation endpoint (default: '')
+Create `.env.local` with:
 
-## Running the Project
+- `NEXT_PUBLIC_DICTATION_ENDPOINT`: the server's WebSocket URL, e.g.
+  `ws://localhost:8081/ws` (the server's default port is 8081).
+
+## Running
+
+Start the server first (see `../server/README.md` for credentials):
+
+```bash
+cd ../server && make run-server
+```
+
+Then the webapp:
 
 ```bash
 npm install -g pnpm
@@ -14,12 +27,15 @@ pnpm install
 pnpm dev
 ```
 
-##Tech Stack
+Open http://localhost:3000 and allow microphone access.
 
-- Next.js
+## Testing
+
+```bash
+pnpm build   # production build and type check
+```
+
+## Tech stack
+
+- Next.js, React, TypeScript
 - Tailwind CSS
-- TypeScript
-
-## PTT Live Session
-
-The PTT Live Session is a live transcription service that transcribes speech to text in real-time. It uses the WebSocket API to transcribe the speech and the VAD to detect speech.

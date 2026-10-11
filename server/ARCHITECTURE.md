@@ -1,42 +1,13 @@
-# Architecture Overview
-
-## System Overview
-
-The system follows a client-server architecture with multi-provider support for speech-to-text transcription. The main components are:
-
-1. **Client** - Captures audio, handles deduplication, and displays transcriptions
-2. **WebSocket Server** - Manages connections and coordinates providers
-4. **STT Providers** - Interface with external speech services (Google)
-
-## Architecture Diagram
+# Architecture
 
 ```
-┌─────────────────┐    WebSocket     ┌─────────────────────────────────┐
-│     Client      │◄────────────────►│         Server                  │
-│                 │     JSON         │                                 │
-│ - Audio Capture │     Messages     │ ┌─────────────────────────────┐ │
-│ - Display Text  │                  │ │        WebConn              │ │
-│                 │                  │ │                             │ │
-└─────────────────┘                  │ │                             │ │
-                                     │ └─────────────┬───────────────┘ │
-                                     └───────────────┼─────────────────┘
-                                                     │
-                                                   │
-                                      ┌────────────┼
-                                      ▼            ▼
-                               ┌──────────────┐ ┌──────────────┐
-                               │   Google     │ │   Future     │
-                               │  Provider    │ │  Provider    │
-                               │              │ │              │
-                               └──────────────┘ └──────────────┘
+Browser ──WebSocket──► internal/server ──► internal/service ──► internal/providers/{google,sarvam}
+  config JSON, PCM,      handler.go          Start(): first STT that opens
+  "STOP"                 protocol.go         Next(): utterances; in translate mode each
+  ◄── utterance/done/error events            final is translated by the first translator that succeeds
 ```
 
-## Data Flow
-
-### 1. Audio Input → Provider Distribution
-- Client captures audio and sends via WebSocket to Server
-- WebConn receives audio data and forwards to Session
-
-### 2. Provider Processing → Result Collection
-- Each provider processes audio independently (Google via gRPC)
-- Providers send transcription results back to client
+1. The client's first text frame is `{"type":"config","mode":"transcribe"|"translate","target":"en|hi|ml|kn|te|mr"}`.
+2. Binary frames are 16-bit PCM at `?sample_rate=` (default 16000); the Google adapter resamples to 16 kHz.
+3. The server sends `utterance{id,text,lang,final,translation?}` events (interim and final share an `id`), then `done` after `STOP`, or `error{code}`.
+4. Providers are tried in order: Google first, then Sarvam. A provider without credentials is skipped.

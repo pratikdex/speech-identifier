@@ -1,4 +1,4 @@
-module github.com/agnivade/stt_challenge
+module dictation
 
 go 1.24.4
 

@@ -1,0 +1,15 @@
+template: testify
+packages:
+  dictation/internal/providers:
+    config:
+      dir: internal/providers/mocks
+      filename: mocks.go
+      pkgname: mocks
+    interfaces:
+      SpeechToText: {}
+      TranscriptStream: {}
+      Translator: {}
+  dictation/internal/providers/google:
+    interfaces:
+      streamingRecognizeClient: {}
+      translateClient: {}

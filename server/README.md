@@ -1,28 +1,26 @@
 # Speech-to-Text Challenge
 
-A real-time speech-to-text transcription system with support for multiple providers (Google Cloud Speech-to-Text). The system consists of a WebSocket server that processes audio streams and a client that captures audio from microphone or file input.
+A WebSocket server for real-time dictation: streams microphone audio to speech-to-text (Google) and optionally translates each sentence (Google, falling back to Sarvam).
 
 ## Features
 
-- **Multi-provider support**: Google Cloud Speech-to-Text
+- **Providers**: Google Speech-to-Text and Translate; Sarvam Translate as fallback
+- **Language detection**: Google STT with up to 3 alternative languages
 - **Real-time transcription**: WebSocket-based streaming audio processing
 
 ## Directory Structure
 
 ```
-stt-challenge/
-├── cmd/
-│   └── server/           # Server application
-│       └── main.go       # Server entry point
-├── providers/            # Speech provider implementations
-│   ├── provider.go       # Provider interfaces
-│   ├── google/           # Google Speech-to-Text provider
-│   └── mocks/            # Generated mocks for testing
-├── server.go             # HTTP server and connection management
-├── websocket.go          # WebSocket connection handling
-├── *_test.go            # Test files
-├── Makefile             # Build and run commands
-└── README.md            # This file
+server/
+├── cmd/server/main.go        # Entry point: flags, provider wiring, HTTP server
+└── internal/
+    ├── server/               # WebSocket handler and protocol messages
+    ├── service/              # Speech facade: STT session + translation, providers tried in order
+    ├── providers/            # Provider interfaces (stt.go, translate.go)
+    │   ├── google/           # Google STT + Translate
+    │   ├── sarvam/           # Sarvam Translate
+    │   └── mocks/            # Generated mocks (make mocks)
+    └── audio/                # PCM helpers and resampling
 ```
 
 ## Prerequisites
@@ -72,12 +70,18 @@ go run ./cmd/server -port=8080
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
 | `-port` | string | `"8081"` | Server port |
+| `-origin` | string | `"http://localhost:3000"` | Browser origin allowed to open sessions |
+| `-stt-languages` | string | `"en-IN,hi-IN,ml-IN,kn-IN"` | Google STT primary language plus up to 3 alternatives |
+
 
 #### Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GOOGLE_APPLICATION_CREDENTIALS` | For Google provider | Path to Google Cloud service account JSON file |
+| `GOOGLE_APPLICATION_CREDENTIALS` | For Google provider | Path to Google Cloud service account JSON file; requires the Speech-to-Text, Translation and Text-to-Speech APIs enabled |
+| `SARVAM_API_KEY` | For Sarvam provider | Sarvam API key; translation fallback after Google; skipped if unset |
+
+Put these in `server/.env` (copy `.env.example`); the server loads it at startup. Providers are tried in order (Google, then Sarvam); one whose credentials are missing is skipped.
 
 
 ## Development

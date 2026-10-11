@@ -44,6 +44,7 @@ export class Recorder {
       void this.audioContext.close();
       this.audioContext = undefined;
     }
+    this.originalStream?.getTracks().forEach((t) => t.stop()); // the real mic; stopping only the copy leaves the tab's mic indicator on
     this.originalStream = undefined;
   }
 
@@ -170,6 +171,7 @@ export class Recorder {
   }
 
   destroy = async () => {
+    if (!this.stream) return; // already released; resetRecorder would reopen the mic
     await this.resetRecorder();
     this.destroyStream();
   };

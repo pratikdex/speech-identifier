@@ -42,3 +42,8 @@ bin/
 
 # Log files
 *.log
+
+# Debugger binaries
+_debug*
+__debug_bin*
+

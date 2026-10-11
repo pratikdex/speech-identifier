@@ -2,77 +2,68 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
-	"fmt"
 	"log"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
+	"time"
 
-	speech "cloud.google.com/go/speech/apiv1"
-	stt "github.com/agnivade/stt_challenge"
-	"github.com/agnivade/stt_challenge/providers"
-	"github.com/agnivade/stt_challenge/providers/google"
+	"github.com/joho/godotenv"
+
+	"dictation/internal/providers"
+	"dictation/internal/providers/google"
+	"dictation/internal/providers/sarvam"
+	"dictation/internal/server"
+	"dictation/internal/service"
 )
 
 func main() {
-	// Parse command line flags
 	port := flag.String("port", "8081", "Server port")
+	languages := flag.String("stt-languages", "en-IN,hi-IN,ml-IN,kn-IN", "Google STT primary language and up to 3 alternatives")
+	origin := flag.String("origin", "http://localhost:3000", "Browser origin allowed to open sessions")
 	flag.Parse()
 
-	// Create providers based on flags
-	var provider providers.Provider
-	var cleanupFuncs []func() error
+	// Load API keys from .env if present; real environment variables win.
+	_ = godotenv.Load()
 
-	p, cleanup, err := createGoogleProvider()
-	if err != nil {
-		log.Printf("Failed to create Google provider: %v", err)
-		return
-	}
-	provider = p
-	if cleanup != nil {
-		cleanupFuncs = append(cleanupFuncs, cleanup)
-	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-	// Cleanup all providers on exit
-	defer func() {
-		for _, cleanup := range cleanupFuncs {
-			if err := cleanup(); err != nil {
-				log.Printf("Error during provider cleanup: %v", err)
-			}
+	// Order of this list is the default priority; STT_PROVIDER moves one STT to the front.
+	var all []any
+	for _, f := range []providers.Factory{google.Factory(strings.Split(*languages, ",")), sarvam.Factory} {
+		ps, err := f(ctx)
+		if err != nil {
+			log.Fatal(err)
 		}
-	}()
+		all = append(all, ps...)
+	}
 
-	// Create server with all providers
-	s := stt.New(*port, provider)
+	// A new capability (e.g. text-to-speech) is one more providers.Of line here.
+	cfg := service.Config{
+		STT:         providers.PreferFirst(providers.Of[providers.SpeechToText](all), os.Getenv("STT_PROVIDER")),
+		Translators: providers.Of[providers.Translator](all),
+	}
 
+	srv := &http.Server{
+		Addr:        ":" + *port,
+		Handler:     server.NewHandler(service.New(cfg), *origin),
+		BaseContext: func(net.Listener) context.Context { return ctx }, // shutdown closes sessions
+	}
 	go func() {
-		if err := s.Start(); err != nil {
-			log.Fatalf("Server failed to start: %v\n", err)
-		}
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		_ = srv.Shutdown(shutdownCtx)
 	}()
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	<-sig
-
-	if err := s.Stop(); err != nil {
-		log.Printf("Error during server shutdown: %v\n", err)
+	log.Printf("listening on %s", srv.Addr)
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatal(err)
 	}
-}
-
-func createGoogleProvider() (providers.Provider, func() error, error) {
-	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
-		return nil, nil, fmt.Errorf("GOOGLE_APPLICATION_CREDENTIALS environment variable is required for Google provider")
-	}
-
-	ctx := context.Background()
-	speechClient, err := speech.NewClient(ctx)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create Google Speech client: %v", err)
-	}
-
-	provider := google.NewProvider(speechClient)
-
-	return provider, speechClient.Close, nil
 }

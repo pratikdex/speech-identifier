@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/Header";
-import RecorderProvider from "@/components/RecorderContext";
+
+const sans = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  fallback: ["system-ui", "sans-serif"],
+});
 
 export const metadata: Metadata = {
-  title: "Interspeech Demo",
+  title: "Dictation",
 };
 
 export default function RootLayout({
@@ -13,13 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="h-screen w-screen flex flex-col">
-          <RecorderProvider>
-            <Header />
-            <div className="p-5 flex-1">{children}</div>
-          </RecorderProvider>
-      </body>
+    <html lang="en" className={`${sans.variable}`}>
+      <body className="bg-paper text-ink font-sans antialiased">{children}</body>
     </html>
   );
 }
