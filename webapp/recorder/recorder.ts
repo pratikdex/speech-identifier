@@ -1,8 +1,6 @@
 'use client';
-// Single-class Recorder using MediaRecorder with WAV via polyfill.
-// No Sentry, no toast, no device-change handling.
-// NOTE: Avoid importing worker-dependent libs at module scope to keep SSR safe.
-// We'll dynamically import them inside methods when running on the client.
+// Recorder wraps MediaRecorder with a WAV encoder polyfill. The polyfill is
+// imported inside methods because it needs workers, which SSR doesn't have.
 
 export class Recorder {
   private recorder?: MediaRecorder;
@@ -48,10 +46,6 @@ export class Recorder {
     this.originalStream = undefined;
   }
 
-  public getOriginalStream(): MediaStream | undefined {
-    return this.originalStream;
-  }
-
   getMediaStream = async (): Promise<MediaStream> => {
     await this.setupStreams();
     return this.stream!;
@@ -65,25 +59,13 @@ export class Recorder {
     return rate;
   };
 
-  getExpectedBlobSizeSync = async (): Promise<number> => {
-    const sampleRate = await this.getAudioSampleRate();
-    const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
-    return isFirefox ? sampleRate * 2 : sampleRate;
-  };
-
   getMediaRecorder = async (): Promise<MediaRecorder> => {
     if (this.recorder) return this.recorder;
     await this.setupStreams();
 
-    const original = this.getOriginalStream();
-    let recordStream: MediaStream = this.stream!;
-    try {
-      const origChannels = original?.getAudioTracks()[0]?.getSettings().channelCount;
-      if (origChannels === 1 && original) {
-        await original.getAudioTracks()[0]?.applyConstraints?.({ channelCount: 1 });
-        recordStream = original;
-      }
-    } catch {}
+    // A mono mic can be recorded directly; otherwise record the mono mixdown.
+    const mono = this.originalStream?.getAudioTracks()[0]?.getSettings().channelCount === 1;
+    const recordStream = mono ? this.originalStream! : this.stream!;
 
     // Dynamically import the polyfill and encoder on the client where workers exist
     try {
@@ -106,20 +88,11 @@ export class Recorder {
     return this.recorder;
   };
 
-  startMediaRecorder = async (chunkInterval = 500, failureCallback?: () => void) => {
-    console.log("startMediaRecorder", chunkInterval);
-    try {
-      const recorder = await this.getMediaRecorder();
-      if (recorder.state !== 'inactive') throw new Error('Recorder is already active');
-      recorder.start(chunkInterval);
-      return recorder;
-    } catch (e) {
-      console.log("error", e);  
-      if (failureCallback) failureCallback();
-      // eslint-disable-next-line no-console
-      console.error('Error starting media recorder', e);
-      throw e;
-    }
+  startMediaRecorder = async (chunkInterval = 500) => {
+    const recorder = await this.getMediaRecorder();
+    if (recorder.state !== 'inactive') throw new Error('Recorder is already active');
+    recorder.start(chunkInterval);
+    return recorder;
   };
 
   stopMediaRecorder = async () => {
@@ -135,9 +108,7 @@ export class Recorder {
 
   resetRecorder = async () => {
     try {
-      const stream = await this.getMediaStream();
       const recorder = await this.getMediaRecorder();
-      stream.getAudioTracks().forEach((track) => (track.enabled = true));
       if (recorder.state === 'inactive') return recorder;
       if (recorder.state === 'paused') recorder.resume();
       Object.entries(this.eventListeners).forEach(([type, listeners]) =>
@@ -165,10 +136,6 @@ export class Recorder {
     this.eventListeners[type] = listeners.filter((l) => l !== listener);
     recorder.removeEventListener(type, listener);
   };
-
-  get state() {
-    return this.recorder?.state;
-  }
 
   destroy = async () => {
     if (!this.stream) return; // already released; resetRecorder would reopen the mic

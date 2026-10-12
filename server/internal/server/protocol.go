@@ -79,12 +79,13 @@ func errorCode(err error) string {
 // Server → client events.
 
 type utteranceEvent struct {
-	Type        string `json:"type"` // "utterance"
-	ID          string `json:"id"`
-	Text        string `json:"text"`
-	Lang        string `json:"lang"`
-	Final       bool   `json:"final"`
-	Translation string `json:"translation,omitempty"`
+	Type        string  `json:"type"` // "utterance"
+	ID          string  `json:"id"`
+	Text        string  `json:"text"`
+	Lang        string  `json:"lang"`
+	Final       bool    `json:"final"`
+	Translation string  `json:"translation,omitempty"`
+	Confidence  float32 `json:"confidence,omitempty"`
 }
 
 type event struct {

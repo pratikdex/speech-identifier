@@ -128,3 +128,13 @@ func TestHandler_RejectsForeignOrigin(t *testing.T) {
 	require.NoError(t, err)
 	conn.Close()
 }
+
+func TestHandler_RejectsOutOfRangeSampleRate(t *testing.T) {
+	ts := httptest.NewServer(NewHandler(&fakeSpeech{sess: newFakeSession()}, "http://localhost:3000"))
+	t.Cleanup(ts.Close)
+	conn, _, err := websocket.DefaultDialer.Dial("ws"+strings.TrimPrefix(ts.URL, "http")+"/ws?sample_rate=1", nil)
+	require.NoError(t, err)
+	t.Cleanup(func() { conn.Close() })
+	require.NoError(t, conn.WriteMessage(websocket.TextMessage, []byte(`{"type":"config","mode":"transcribe"}`)))
+	assert.Equal(t, map[string]any{"type": "error", "code": "bad_config"}, readEvent(t, conn))
+}

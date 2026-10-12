@@ -9,11 +9,11 @@ type STTConfig struct {
 
 // Transcript is a single transcription result emitted by a TranscriptStream.
 type Transcript struct {
-	Text               string
-	Language           string // detected BCP-47, e.g. "hi-IN"
-	LanguageConfidence float32
-	Final              bool
-	Provider           string
+	Text       string
+	Language   string  // detected BCP-47, e.g. "hi-IN"
+	Confidence float32 // of Text, 0..1 on finals; 0 when the provider gives none
+	Final      bool
+	Provider   string
 }
 
 // SpeechToText opens streaming transcription sessions.

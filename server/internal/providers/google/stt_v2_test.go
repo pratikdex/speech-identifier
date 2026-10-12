@@ -137,7 +137,7 @@ func TestV2Next_ForwardsInterimAndFinalWithLanguage(t *testing.T) {
 
 	got, err = s.Next()
 	require.NoError(t, err)
-	assert.Equal(t, providers.Transcript{Text: "नमस्ते दुनिया", Language: "hi-IN", Final: true, Provider: "google-v2"}, got)
+	assert.Equal(t, providers.Transcript{Text: "नमस्ते दुनिया", Language: "hi-IN", Confidence: 0.95, Final: true, Provider: "google-v2"}, got)
 	m.AssertExpectations(t)
 }
 

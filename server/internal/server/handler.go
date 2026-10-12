@@ -101,7 +101,7 @@ func readConfig(conn *websocket.Conn, rawRate string) (service.SessionOptions, e
 	}
 	rate := 16000
 	if rawRate != "" {
-		if rate, err = strconv.Atoi(rawRate); err != nil || rate <= 0 {
+		if rate, err = strconv.Atoi(rawRate); err != nil || rate < 8000 || rate > 192000 {
 			return service.SessionOptions{}, errors.New("invalid sample_rate")
 		}
 	}
@@ -109,7 +109,7 @@ func readConfig(conn *websocket.Conn, rawRate string) (service.SessionOptions, e
 }
 
 // readAudio forwards audio frames to the session until the client sends
-// STOP or the connection closes. Other text frames (e.g. "START") are ignored.
+// STOP or the connection closes. Other text frames are ignored.
 func readAudio(conn *websocket.Conn, sess service.Session) {
 	for {
 		msgType, data, err := conn.ReadMessage()
@@ -140,7 +140,7 @@ func writeUtterances(conn *websocket.Conn, sess service.Session) {
 			finish(conn, event{Type: "error", Code: errorCode(err)})
 			return
 		}
-		ev := utteranceEvent{Type: "utterance", ID: u.ID, Text: u.Text, Lang: u.Language, Final: u.Final, Translation: u.Translation}
+		ev := utteranceEvent{Type: "utterance", ID: u.ID, Text: u.Text, Lang: u.Language, Final: u.Final, Translation: u.Translation, Confidence: u.Confidence}
 		if err := writeJSON(conn, ev); err != nil {
 			conn.Close()
 			return

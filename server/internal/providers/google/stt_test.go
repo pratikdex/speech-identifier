@@ -138,7 +138,7 @@ func TestNext_ForwardsInterimAndFinalWithLanguage(t *testing.T) {
 
 	got, err = s.Next()
 	require.NoError(t, err)
-	assert.Equal(t, providers.Transcript{Text: "नमस्ते दुनिया", Language: "hi-IN", Final: true, Provider: "google"}, got)
+	assert.Equal(t, providers.Transcript{Text: "नमस्ते दुनिया", Language: "hi-IN", Confidence: 0.9, Final: true, Provider: "google"}, got)
 }
 
 func TestNext_JoinsInterimResultsAndQueuesFinals(t *testing.T) {
@@ -220,7 +220,8 @@ func TestClose(t *testing.T) {
 func TestNormalizeLang(t *testing.T) {
 	tests := map[string]string{
 		"hi-in": "hi-IN",
-		"en":    "en",
+		"en":    "en-IN",
+		"fr-fr": "fr-FR",
 		"EN-in": "en-IN",
 		"kn-IN": "kn-IN",
 		"":      "",

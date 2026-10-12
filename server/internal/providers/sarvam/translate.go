@@ -52,8 +52,8 @@ type translateResponse struct {
 func (t *Translator) Translate(ctx context.Context, text string, src, target providers.Language) (string, error) {
 	req := translateRequest{
 		Input:              text,
-		SourceLanguageCode: src.BCP47(),
-		TargetLanguageCode: target.BCP47(),
+		SourceLanguageCode: src.String(),
+		TargetLanguageCode: target.String(),
 		Model:              translateModel,
 		Mode:               "formal",
 	}

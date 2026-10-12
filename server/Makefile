@@ -41,5 +41,4 @@ mocks:
 clean:
 	go clean -testcache ./...
 	rm -f coverage.out
-	rm -f transcript.txt
 	rm -rf bin/

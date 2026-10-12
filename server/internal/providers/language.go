@@ -23,37 +23,10 @@ func (l Language) String() string {
 	return string(l)
 }
 
-// BCP47 returns the canonical BCP-47 tag (e.g. "hi-IN").
-func (l Language) BCP47() string {
-	return string(l)
-}
-
 // Base returns the 2-letter base language code without region (e.g. "hi-IN" -> "hi").
 func (l Language) Base() string {
 	base, _, _ := strings.Cut(string(l), "-")
 	return strings.ToLower(base)
-}
-
-// Name returns the human-readable English name of the language.
-func (l Language) Name() string {
-	switch l {
-	case LangEnglish:
-		return "English"
-	case LangHindi:
-		return "Hindi"
-	case LangMalayalam:
-		return "Malayalam"
-	case LangKannada:
-		return "Kannada"
-	case LangTelugu:
-		return "Telugu"
-	case LangMarathi:
-		return "Marathi"
-	case LangAuto:
-		return "Auto"
-	default:
-		return string(l)
-	}
 }
 
 // IsSupported reports whether the language is one of the supported Indian languages.

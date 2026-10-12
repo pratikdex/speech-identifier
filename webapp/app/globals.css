@@ -9,3 +9,43 @@
   --color-gutter: #a1a1aa;
   --color-accent: #6366f1;
 }
+
+/* Translate mode: said | translated, one row per utterance. */
+.tiptap table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.tiptap td {
+  vertical-align: top;
+  padding: 0.25rem 1rem 0.25rem 0;
+  border-bottom: 1px solid var(--color-rule);
+}
+.tiptap td + td {
+  color: var(--color-accent);
+}
+
+/* Confidence circle in the left margin (the editor's parent leaves room for it). */
+.tiptap p[data-confidence] {
+  position: relative;
+  min-height: 2.25rem; /* circle height + gap, so one-line neighbors' circles don't touch */
+}
+.tiptap p[data-confidence]::before {
+  content: attr(data-confidence);
+  position: absolute;
+  left: -2.75rem;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-style: normal;
+  color: #fff;
+}
+.tiptap p[data-level="high"]::before { background: #16a34a; }
+.tiptap p[data-level="mid"]::before { background: #d97706; }
+.tiptap p[data-level="low"]::before { background: var(--color-margin); }

@@ -11,26 +11,22 @@ func TestLanguage_Methods(t *testing.T) {
 	tests := []struct {
 		lang       Language
 		wantString string
-		wantBCP47  string
 		wantBase   string
-		wantName   string
 		supported  bool
 	}{
-		{lang: LangEnglish, wantString: "en-IN", wantBCP47: "en-IN", wantBase: "en", wantName: "English", supported: true},
-		{lang: LangHindi, wantString: "hi-IN", wantBCP47: "hi-IN", wantBase: "hi", wantName: "Hindi", supported: true},
-		{lang: LangMalayalam, wantString: "ml-IN", wantBCP47: "ml-IN", wantBase: "ml", wantName: "Malayalam", supported: true},
-		{lang: LangKannada, wantString: "kn-IN", wantBCP47: "kn-IN", wantBase: "kn", wantName: "Kannada", supported: true},
-		{lang: LangTelugu, wantString: "te-IN", wantBCP47: "te-IN", wantBase: "te", wantName: "Telugu", supported: true},
-		{lang: LangMarathi, wantString: "mr-IN", wantBCP47: "mr-IN", wantBase: "mr", wantName: "Marathi", supported: true},
-		{lang: LangAuto, wantString: "auto", wantBCP47: "auto", wantBase: "auto", wantName: "Auto", supported: false},
+		{lang: LangEnglish, wantString: "en-IN", wantBase: "en", supported: true},
+		{lang: LangHindi, wantString: "hi-IN", wantBase: "hi", supported: true},
+		{lang: LangMalayalam, wantString: "ml-IN", wantBase: "ml", supported: true},
+		{lang: LangKannada, wantString: "kn-IN", wantBase: "kn", supported: true},
+		{lang: LangTelugu, wantString: "te-IN", wantBase: "te", supported: true},
+		{lang: LangMarathi, wantString: "mr-IN", wantBase: "mr", supported: true},
+		{lang: LangAuto, wantString: "auto", wantBase: "auto", supported: false},
 	}
 
 	for _, tt := range tests {
 		t.Run(string(tt.lang), func(t *testing.T) {
 			assert.Equal(t, tt.wantString, tt.lang.String())
-			assert.Equal(t, tt.wantBCP47, tt.lang.BCP47())
 			assert.Equal(t, tt.wantBase, tt.lang.Base())
-			assert.Equal(t, tt.wantName, tt.lang.Name())
 			assert.Equal(t, tt.supported, tt.lang.IsSupported())
 		})
 	}

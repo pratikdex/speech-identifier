@@ -152,10 +152,11 @@ func transcripts(resp *speechpb.StreamingRecognizeResponse) []providers.Transcri
 		text := r.GetAlternatives()[0].GetTranscript()
 		if r.GetIsFinal() {
 			out = append(out, providers.Transcript{
-				Text:     text,
-				Language: normalizeLang(r.GetLanguageCode()),
-				Final:    true,
-				Provider: providerName,
+				Text:       text,
+				Confidence: r.GetAlternatives()[0].GetConfidence(),
+				Language:   normalizeLang(r.GetLanguageCode()),
+				Final:      true,
+				Provider:   providerName,
 			})
 			continue
 		}
@@ -174,12 +175,15 @@ func transcripts(resp *speechpb.StreamingRecognizeResponse) []providers.Transcri
 	return out
 }
 
-// normalizeLang canonicalizes a BCP-47 tag as Google returns it ("hi-in")
-// to the form used inside the server ("hi-IN").
+// normalizeLang canonicalizes a tag as Google returns it ("hi-in", "hi") to
+// the form used inside the server ("hi-IN"); unknown tags keep their parts.
 func normalizeLang(s string) string {
-	lang, region, ok := strings.Cut(s, "-")
-	if !ok {
-		return strings.ToLower(s)
+	if lang, err := providers.ParseLanguage(s); err == nil && lang.IsSupported() {
+		return lang.String()
 	}
-	return strings.ToLower(lang) + "-" + strings.ToUpper(region)
+	l, region, ok := strings.Cut(strings.TrimSpace(s), "-")
+	if !ok {
+		return strings.ToLower(l)
+	}
+	return strings.ToLower(l) + "-" + strings.ToUpper(region)
 }

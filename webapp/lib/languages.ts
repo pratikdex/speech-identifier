@@ -7,8 +7,6 @@ export enum Lang {
   Marathi = 'mr',
 }
 
-export const ALL_LANGUAGES: readonly Lang[] = Object.values(Lang);
-
 export const LANGUAGE_NAMES: Record<Lang, string> = {
   [Lang.English]: 'English',
   [Lang.Hindi]: 'हिन्दी',

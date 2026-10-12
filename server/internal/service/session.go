@@ -48,7 +48,7 @@ func (s *session) Next() (Utterance, error) {
 		if t.Final && strings.TrimSpace(t.Text) == "" {
 			continue
 		}
-		u := Utterance{ID: fmt.Sprintf("u%d", s.finals+1), Text: t.Text, Language: t.Language, Final: t.Final}
+		u := Utterance{ID: fmt.Sprintf("u%d", s.finals+1), Text: t.Text, Language: t.Language, Final: t.Final, Confidence: t.Confidence}
 		if t.Final {
 			s.finals++
 			if s.translators != nil {

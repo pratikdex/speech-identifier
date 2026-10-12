@@ -246,15 +246,16 @@ func v2Transcripts(resp *speechv2pb.StreamingRecognizeResponse) []providers.Tran
 		text := r.GetAlternatives()[0].GetTranscript()
 		if r.GetIsFinal() {
 			out = append(out, providers.Transcript{
-				Text:     text,
-				Language: normalizeV2Lang(r.GetLanguageCode()),
-				Final:    true,
-				Provider: providers.ProviderGoogleV2.String(),
+				Text:       text,
+				Confidence: r.GetAlternatives()[0].GetConfidence(),
+				Language:   normalizeLang(r.GetLanguageCode()),
+				Final:      true,
+				Provider:   providers.ProviderGoogleV2.String(),
 			})
 			continue
 		}
 		if interimLang == "" {
-			interimLang = normalizeV2Lang(r.GetLanguageCode())
+			interimLang = normalizeLang(r.GetLanguageCode())
 		}
 		interim.WriteString(text)
 	}
@@ -266,20 +267,4 @@ func v2Transcripts(resp *speechv2pb.StreamingRecognizeResponse) []providers.Tran
 		})
 	}
 	return out
-}
-
-func normalizeV2Lang(s string) string {
-	lang, err := providers.ParseLanguage(s)
-	if err == nil && lang.IsSupported() {
-		return lang.BCP47()
-	}
-	s = strings.TrimSpace(s)
-	if s == "" {
-		return ""
-	}
-	l, region, ok := strings.Cut(s, "-")
-	if !ok {
-		return strings.ToLower(l)
-	}
-	return strings.ToLower(l) + "-" + strings.ToUpper(region)
 }

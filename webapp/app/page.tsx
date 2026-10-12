@@ -4,12 +4,13 @@ import { useDictation, DictationPhase } from '@/hooks/useDictation';
 import { DictationMode } from '@/lib/dictation';
 import { LANGUAGE_NAMES, languageLabel, type Lang } from '@/lib/languages';
 import { SealRing } from '@/components/SealRing';
-import { Typewriter } from '@/components/Typewriter';
+import { Editor } from '@/components/Editor';
 
 export default function Home() {
   const { phase, lines, error, mode, setMode, target, setTarget, analyser, toggle } = useDictation();
   const busy = phase !== DictationPhase.Idle;
   const lang = lines.findLast((l) => l.final)?.lang;
+  const interim = lines.findLast((l) => !l.final);
   const chip = languageLabel(lang, lines.filter((l) => l.final).map((l) => l.text));
 
   return (
@@ -47,19 +48,11 @@ export default function Home() {
       </div>
 
       <section className="mx-auto w-full max-w-4xl flex-1 space-y-3 overflow-y-auto px-6 pb-44 pt-2 text-lg leading-relaxed">
-        {lines.length === 0 && <p className="text-gutter">Tap the mic and start speaking…</p>}
-        {lines.map((l) => (
-          <div key={l.id} className="grid gap-x-8 gap-y-1 sm:grid-cols-2">
-            <p className={l.final ? '' : 'text-gutter'}>
-              <Typewriter text={l.text} instant={!l.final} />
-            </p>
-            {l.translation && l.translation !== l.text && (
-              <p className="text-accent">
-                <Typewriter text={l.translation} />
-              </p>
-            )}
-          </div>
-        ))}
+        {/* pl-11 leaves the left margin for the confidence circles. */}
+        <div className="space-y-3 pl-11">
+          <Editor lines={lines} translate={mode === DictationMode.Translate} />
+          {interim ? <p className="text-gutter">{interim.text}</p> : lines.length === 0 && <p className="text-gutter">Tap the mic and start speaking…</p>}
+        </div>
       </section>
 
       <div className="pointer-events-none fixed inset-x-0 bottom-3 flex flex-col items-center gap-2 px-4">

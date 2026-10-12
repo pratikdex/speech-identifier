@@ -32,6 +32,7 @@ type Utterance struct {
 	Language    string // detected
 	Final       bool
 	Translation string // set on finals in Translate mode
+	Confidence  float32
 }
 
 // Session is a streaming transcription session.

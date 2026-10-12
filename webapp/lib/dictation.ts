@@ -6,11 +6,6 @@ export enum DictationMode {
   Translate = 'translate',
 }
 
-export enum ControlCommand {
-  Start = 'START',
-  Stop = 'STOP',
-}
-
 // Mirrors the wire protocol in server/internal/server/protocol.go; keep in sync.
 export enum ServerEventType {
   Utterance = 'utterance',
@@ -26,7 +21,7 @@ export enum ErrorCode {
   BadConfig = 'bad_config',
 }
 
-export type Utterance = { id: string; text: string; lang: string; final: boolean; translation?: string };
+export type Utterance = { id: string; text: string; lang: string; final: boolean; translation?: string; confidence?: number };
 
 export type ServerEvent =
   | ({ type: ServerEventType.Utterance | 'utterance' } & Utterance)
@@ -35,7 +30,7 @@ export type ServerEvent =
 
 type Handlers = { onEvent(e: ServerEvent): void; onClose(): void };
 
-// startDictation opens the WebSocket, sends the config and START, then streams mic audio.
+// startDictation opens the WebSocket, sends the config, then streams mic audio.
 export async function startDictation(
   recorder: Recorder,
   settings: { mode: DictationMode; target: Lang },
@@ -73,7 +68,6 @@ export async function startDictation(
   });
 
   ws.send(JSON.stringify({ type: 'config', ...settings }));
-  ws.send(ControlCommand.Start);
   try {
     await recorder.addEventListener('dataavailable', sendAudio);
     await recorder.startMediaRecorder(500);
@@ -86,7 +80,7 @@ export async function startDictation(
     stop() {
       void recorder.removeEventListener('dataavailable', sendAudio);
       void recorder.stopMediaRecorder();
-      if (ws.readyState === WebSocket.OPEN) ws.send(ControlCommand.Stop);
+      if (ws.readyState === WebSocket.OPEN) ws.send('STOP');
       setTimeout(() => ws.close(), 5000); // don't hang in "stopping" if the server never replies
     },
     close() {
