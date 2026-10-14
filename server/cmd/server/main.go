@@ -10,9 +10,9 @@ import (
 	"syscall"
 
 	speech "cloud.google.com/go/speech/apiv1"
-	stt "github.com/agnivade/stt_challenge"
-	"github.com/agnivade/stt_challenge/providers"
-	"github.com/agnivade/stt_challenge/providers/google"
+	stt "github.com/pratikdex/speech-identifier"
+	"github.com/pratikdex/speech-identifier/providers"
+	"github.com/pratikdex/speech-identifier/providers/google"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-package stt_challenge
+package speech_identifier
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/agnivade/stt_challenge/providers"
+	"github.com/pratikdex/speech-identifier/providers"
 )
 
 // WebSocketRequest represents an audio data message sent from the client to the server.

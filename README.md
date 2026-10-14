@@ -1,4 +1,4 @@
-# Interview Challenge - Real-Time Speech-to-Text System
+# Speech Identifier - Real-Time Speech-to-Text System
 
 A full-stack real-time speech transcription system consisting of a Go WebSocket server and a Next.js web application for live dictation.
 

@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/agnivade/stt_challenge/providers"
+	"github.com/pratikdex/speech-identifier/providers"
 )
 
 const providerName = "google"

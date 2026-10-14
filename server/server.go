@@ -1,4 +1,4 @@
-package stt_challenge
+package speech_identifier
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/agnivade/stt_challenge/providers"
+	"github.com/pratikdex/speech-identifier/providers"
 )
 
 type Server struct {

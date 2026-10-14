@@ -1,4 +1,4 @@
-package stt_challenge
+package speech_identifier
 
 import (
 	"io"
@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/agnivade/stt_challenge/providers/mocks"
+	"github.com/pratikdex/speech-identifier/providers/mocks"
 )
 
 func TestServer_StartAndStop(t *testing.T) {
