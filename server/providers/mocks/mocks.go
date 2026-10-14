@@ -7,7 +7,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/agnivade/stt_challenge/providers"
+	"github.com/pratikdex/speech-identifier/providers"
 	mock "github.com/stretchr/testify/mock"
 )
 

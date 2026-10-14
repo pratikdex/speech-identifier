@@ -1,4 +1,4 @@
-# Speech-to-Text Challenge
+# Speech Identifier
 
 A real-time speech-to-text transcription system with support for multiple providers (Google Cloud Speech-to-Text). The system consists of a WebSocket server that processes audio streams and a client that captures audio from microphone or file input.
 
@@ -10,7 +10,7 @@ A real-time speech-to-text transcription system with support for multiple provid
 ## Directory Structure
 
 ```
-stt-challenge/
+speech-identifier/
 ├── cmd/
 │   └── server/           # Server application
 │       └── main.go       # Server entry point
